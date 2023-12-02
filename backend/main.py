@@ -1,5 +1,5 @@
 import threading
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import json
 
@@ -16,13 +16,15 @@ app.add_middleware(
 )
 
 lock = threading.Lock()
+processing_active = True  # Global flag to control processing
 
 all_wins = []
 
 with open("words.json", "r") as f:
     wordle_words = json.load(f)
+
+wordle_words = list(set(wordle_words))  # De-duplicate words
 with open("words.json", "w") as f:
-    wordle_words = list(set(wordle_words))
     json.dump(wordle_words, f, indent=4)
 
 
@@ -42,7 +44,7 @@ def possibilities(template):
     return possibilities
 
 
-def get_new_templates(template, valid_words):
+def get_new_templates(template):
     # get all possible words in every direction
     # for every row, get all possible words
     min_len_row = 10000000
@@ -114,87 +116,71 @@ def get_words_in_template(template):
     return out
 
 
-def process_template(template, valid_words):
-    """return all words that fit "?q??t"""
+async def process_template(template, valid_words, websocket, processing_active):
+    print(template)
+    new_templates = get_new_templates(template)
 
-    new_tamplates = get_new_templates(template, valid_words)
+    for template in new_templates:
+        if not processing_active:  # Check if processing should continue
+            return False
 
-    for template in new_tamplates:
-        for s in template:
-            print(" ".join(s))
-        print("")
-    for template in new_tamplates:
         gw = get_words_in_template(template)
         if not all([s in wordle_words for s in gw]):
             return False
 
-        if len((set([s for s in get_words_in_template(template)]))) != len(
-            get_words_in_template(template)
-        ):
+        if len(set(gw)) != len(gw):
             return False
 
         if all(["?" not in t for t in template]):
             all_wins.append(template)
+            await websocket.send_json({"win": template})
             with open("wins.json", "w") as f:
                 json.dump(all_wins, f, indent=4)
 
-        process_template(template, valid_words)
+        await process_template(template, valid_words, websocket, processing_active)
 
     return True
 
 
-def my_func(WORD: str):
-    # row template
-    templates: list[list[str]] = []
+async def my_func(WORD: str, websocket: WebSocket, processing_active):
+    templates = [["?????" for _ in range(5)] for _ in range(7)]
     for i in range(5):
-        template = ["?????", "?????", "?????", "?????", "?????"]
-        template[i] = WORD
-        templates.append(template)
-
-    # diagnol template
-    template = []
-    for i in range(5):
-        row = ""
-        for j in range(5):
-            if j == i:
-                row += WORD[j]
-            else:
-                row += "?"
-
-        template.append(row)
-    templates.append(template)
-
-    # diagnol template
-    template = []
-    for i in range(5):
-        row = ""
-        for j in range(5):
-            if j == 4 - i:
-                row += WORD[j]
-            else:
-                row += "?"
-
-        template.append(row)
-    templates.append(template)
+        templates[i][i] = WORD  # Set row template
+        templates[5][i] = WORD[i] + "?" * i + "?" * (4 - i)  # Set diagonal template
+        templates[6][i] = (
+            "?" * (4 - i) + WORD[i] + "?" * i
+        )  # Set reverse diagonal template
 
     for template in templates:
         for s in get_words_in_template(template):
             wordle_words.append(s)
 
-        process_template(template, wordle_words)
+        await process_template(template, wordle_words, websocket, processing_active)
 
     return all_wins
 
 
 @app.websocket("/ws/words")
 async def websocket_endpoint(websocket: WebSocket):
+    global processing_active
+    processing_active = True  # Reset flag to True at the start of the connection
+
     print("Connected")
     await websocket.accept()
-    while True:
-        data = await websocket.receive_text()
-        if len(data) == 5 and data.isalpha():
-            curret_wins = my_func(WORD=data.lower())
-            for win in curret_wins:
-                await websocket.send_text(win)
-        else:
-            await websocket.send_text("Invalid input")
+    try:
+        while True:
+            data = await websocket.receive_text()
+            if data == "KILL":
+                print("Kill command received, stopping...")
+                processing_active = False  # Set flag to False to stop processing
+                break
+            elif len(data) == 5 and data.isalpha():
+                await my_func(
+                    WORD=data.lower(),
+                    websocket=websocket,
+                    processing_active=processing_active,
+                )
+            else:
+                await websocket.send_text("Invalid input")
+    except WebSocketDisconnect:
+        print("WebSocket disconnected")

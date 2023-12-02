@@ -9,7 +9,7 @@ const Page: React.FC = () => {
     const [word, setWord] = useState('');
     const [receivedWords, setReceivedWords] = useState([]);
     const websocket = useRef(null);
-
+    const [isProcessing, setIsProcessing] = useState(false);
     useEffect(() => {
         // Cleanup WebSocket connection when component unmounts
         return () => {
@@ -50,9 +50,16 @@ const Page: React.FC = () => {
         } else {
             alert('Please enter a 5-letter word.');
         }
+        setIsProcessing(true)
     };
 
-
+    const handleKillProcess = () => {
+        if (websocket.current) {
+            console.log("Sending KILL message"); // Debugging log
+            websocket.current.send("KILL");
+        }
+        setIsProcessing(false);
+    };
 
     return (
         <div className="bg-white flex flex-col pb-10 min-content mb-0">
@@ -66,12 +73,22 @@ const Page: React.FC = () => {
                     className="mt-4 mb-2 p-2 border border-gray-300 rounded"
                     maxLength={5}
                 />
-                <button
-                    onClick={handleWordSubmit}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-                >
-                    Submit
-                </button>
+                {!isProcessing && (  // Show the submit button only if not processing
+                    <button
+                        onClick={handleWordSubmit}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+                    >
+                        Submit
+                    </button>
+                )}
+                {isProcessing && (  // Show the kill button only while processing
+                    <button
+                        onClick={handleKillProcess}
+                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700 mt-2"
+                    >
+                        Kill
+                    </button>
+                )}
                 <div className="mt-4">
                     {receivedWords.map((word, index) => (
                         <div key={index}>{word}</div>
@@ -80,6 +97,7 @@ const Page: React.FC = () => {
             </div>
         </div>
     );
+
 };
 
 export default Page;
