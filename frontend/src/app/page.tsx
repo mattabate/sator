@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
+import CrosswordPuzzle from './CrosswordPuzzle'; // Import the new component
 
 import NavBar from './NavBar';
 
@@ -73,7 +74,7 @@ const Page: React.FC = () => {
                     className="mt-4 mb-2 p-2 border border-gray-300 rounded"
                     maxLength={5}
                 />
-                {!isProcessing && (  // Show the submit button only if not processing
+                {!isProcessing && (
                     <button
                         onClick={handleWordSubmit}
                         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
@@ -81,7 +82,7 @@ const Page: React.FC = () => {
                         Submit
                     </button>
                 )}
-                {isProcessing && (  // Show the kill button only while processing
+                {isProcessing && (
                     <button
                         onClick={handleKillProcess}
                         className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700 mt-2"
@@ -89,15 +90,18 @@ const Page: React.FC = () => {
                         Kill
                     </button>
                 )}
+
+                {/* Map through receivedWords and render crossword puzzles with margins */}
                 <div className="mt-4">
-                    {receivedWords.map((word, index) => (
-                        <div key={index}>{word}</div>
+                    {receivedWords.map((words, index) => (
+                        <div key={index}>
+                            <CrosswordPuzzle words={words} />
+                        </div>
                     ))}
                 </div>
             </div>
         </div>
     );
-
 };
 
 export default Page;

@@ -117,19 +117,23 @@ def get_words_in_template(template):
 
 
 async def process_template(template, valid_words, websocket, processing_active):
-    print(template)
+    # Check if processing should continue
+    if not processing_active:
+        return False
+
     new_templates = get_new_templates(template)
 
     for template in new_templates:
-        if not processing_active:  # Check if processing should continue
+        # Check again before processing the new template
+        if not processing_active:
             return False
 
         gw = get_words_in_template(template)
         if not all([s in wordle_words for s in gw]):
-            return False
+            continue  # Skip to next template if current one doesn't meet criteria
 
         if len(set(gw)) != len(gw):
-            return False
+            continue  # Skip to next template if current one doesn't meet criteria
 
         if all(["?" not in t for t in template]):
             all_wins.append(template)
@@ -137,7 +141,15 @@ async def process_template(template, valid_words, websocket, processing_active):
             with open("wins.json", "w") as f:
                 json.dump(all_wins, f, indent=4)
 
+        # Check before calling the recursive function
+        if not processing_active:
+            return False
+
         await process_template(template, valid_words, websocket, processing_active)
+
+        # Check again after returning from recursive call
+        if not processing_active:
+            return False
 
     return True
 
