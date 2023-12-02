@@ -1,3 +1,4 @@
+// CrosswordPuzzle.tsx
 import React from 'react';
 
 const CrosswordPuzzle = ({ words }: { words: string[] }) => {

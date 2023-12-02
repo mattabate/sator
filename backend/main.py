@@ -117,6 +117,7 @@ def get_words_in_template(template):
 
 
 async def process_template(template, valid_words, websocket, processing_active):
+    print(template)
     # Check if processing should continue
     if not processing_active:
         return False
