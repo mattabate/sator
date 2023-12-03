@@ -3,12 +3,13 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import NavBar from './NavBar';
 
-const backendAddr = process.env.NEXT_PUBLIC_BE_URL;
+const backendAddr = process.env.NEXT_PUBLIC_BE_URL || '';
+
 
 const Page: React.FC = () => {
     const [word, setWord] = useState('');
-    const [receivedWords, setReceivedWords] = useState([]);
-    const websocket = useRef(null);
+    const [receivedWords, setReceivedWords] = useState<string[]>([]);
+    const websocket = useRef<WebSocket | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     useEffect(() => {
         // Cleanup WebSocket connection when component unmounts
