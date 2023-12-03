@@ -138,7 +138,7 @@ async def process_template(template, valid_words, websocket, processing_active):
 
         if all(["?" not in t for t in template]):
             all_wins.append(template)
-            await websocket.send_json({"win": template})
+            await websocket.send_json(template)
             with open("wins.json", "w") as f:
                 json.dump(all_wins, f, indent=4)
 

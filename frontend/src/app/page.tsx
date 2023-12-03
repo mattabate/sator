@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-
 import NavBar from './NavBar';
+import CrosswordGrid from './CrosswordGrid';
 
 const backendAddr = process.env.NEXT_PUBLIC_BE_URL || '';
 
