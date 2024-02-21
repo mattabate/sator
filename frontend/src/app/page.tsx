@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import NavBar from './NavBar';
-import CrosswordGrid from './CrosswordGrid';
+import CrosswordGrid from './CrosswordPuzzle';
 
 const backendAddr = process.env.NEXT_PUBLIC_BE_URL || '';
 
@@ -91,9 +91,8 @@ const Page: React.FC = () => {
                     </button>
                 )}
                 <div className="mt-4">
-                    {receivedWords.map((word, index) => (
-                        <div key={index}>{word}</div>
-                    ))}
+                    <CrosswordGrid words={{ win: receivedWords }} />
+
                 </div>
             </div>
         </div>
