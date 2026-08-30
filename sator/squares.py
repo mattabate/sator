@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Iterable, Iterator, Sequence
+from typing import Iterable, Iterator, Mapping, Sequence
 
 BLANK = "?"
 
@@ -64,16 +64,44 @@ class Square:
         return self.render()
 
 
+def _pool_and_scores(
+    words: Iterable[str] | Mapping[str, float] | Iterable[Sequence],
+) -> tuple[set[str], dict[str, float]]:
+    """Accept a plain word list, ``(word, score)`` pairs, or a mapping."""
+    if isinstance(words, Mapping):
+        return set(words), {w: float(s) for w, s in words.items()}
+    pool: set[str] = set()
+    scores: dict[str, float] = {}
+    for item in words:
+        if isinstance(item, str):
+            pool.add(item)
+        else:
+            word, score = item[0], float(item[1])
+            pool.add(word)
+            scores[word] = max(score, scores.get(word, score))
+    return pool, scores
+
+
 class WordIndex:
     """A word list of one fixed length, queryable by pattern.
 
     ``index.matches("?BAT?")`` returns every word with B, A, T in positions
     2-4. Patterns repeat constantly during a depth-first search, so results are
     memoised; on a 30,000 word list the cache is what makes order 5 tractable.
+
+    ``scores`` is optional and changes the ORDER candidates come back in --
+    highest score first, ties alphabetically. Since the search is depth-first
+    and stops when you stop asking, that order decides which squares you see:
+    with a scored list, the good words get tried first.
     """
 
-    def __init__(self, words: Iterable[str]) -> None:
-        self.words: tuple[str, ...] = tuple(sorted({w for w in words if w}))
+    def __init__(
+        self, words: Iterable[str], scores: Mapping[str, float] | None = None
+    ) -> None:
+        self.scores: dict[str, float] = dict(scores or {})
+        self.words: tuple[str, ...] = tuple(
+            sorted({w for w in words if w}, key=self._key)
+        )
         lengths = {len(w) for w in self.words}
         if len(lengths) > 1:
             raise ValueError(f"mixed word lengths: {sorted(lengths)}")
@@ -88,6 +116,10 @@ class WordIndex:
         self._by_pos = [{k: frozenset(v) for k, v in b.items()} for b in buckets]
         self._lookup = frozenset(self.words)
         self._cache: dict[str, tuple[str, ...]] = {}
+
+    def _key(self, word: str) -> tuple[float, str]:
+        """Sort key: best score first, then alphabetical so ties are stable."""
+        return (-self.scores.get(word, 0.0), word)
 
     def __len__(self) -> int:
         return len(self.words)
@@ -114,7 +146,7 @@ class WordIndex:
                 if not acc:
                     break
                 acc = acc & s
-            result = tuple(sorted(acc))
+            result = tuple(sorted(acc, key=self._key))
 
         self._cache[pattern] = result
         return result
@@ -210,7 +242,7 @@ def _extend(
 
 
 def search(
-    words: Iterable[str],
+    words: Iterable[str] | Mapping[str, float] | Iterable[Sequence],
     order: int | None = None,
     seed: str | None = None,
     row: int = 1,
@@ -221,6 +253,9 @@ def search(
     """Yield double word squares, best-constrained-line-first.
 
     :param words: the word list. Only words of the target length are used.
+        Either plain words, or ``(word, score)`` pairs / a ``{word: score}``
+        mapping -- with scores the search tries the best words first, so the
+        squares that come out first are made of the words you like most.
     :param order: the size of the square. Defaults to ``len(seed)``.
     :param seed: a word to plant before searching, e.g. ``"ABATE"``. It is
         added to the word list if missing, so a name still works as a seed.
@@ -241,7 +276,9 @@ def search(
             raise ValueError("pass order= or seed=")
         order = len(seed)
 
-    pool = {w.strip().upper() for w in words}
+    raw, raw_scores = _pool_and_scores(words)
+    scores = {w.strip().upper(): s for w, s in raw_scores.items()}
+    pool = {w.strip().upper() for w in raw}
     pool = {w for w in pool if len(w) == order and w.isalpha()}
     if seed is not None:
         seed = seed.strip().upper()
@@ -249,7 +286,7 @@ def search(
             raise ValueError(f"seed {seed!r} is not {order} letters")
         pool.add(seed)
 
-    index = WordIndex(pool)
+    index = WordIndex(pool, scores)
 
     if seed is None:
         grid = [BLANK * order for _ in range(order)]

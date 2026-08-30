@@ -1,149 +1,154 @@
 # Worked examples
 
-Every grid below came out of `sater` itself, on the default word list.
+Every grid below came out of `sator` itself, on the default word list.
 The command above each block reproduces it.
 
 ## Seeded with ABATE
 
-The one Matt asked for. ABATE goes in the top row; everything else is the search's doing.
+The one Matt asked for. ABATE goes in the top row; everything else is the search's doing. Every other word here is one he approved by hand.
 
 ```console
-$ sater ABATE -c 3
-3,258 words of length 5, seeded with ABATE in row 1
+$ sator ABATE -c 3
+7,418 words of length 5 (3,875 hand-approved, tried first), seeded with ABATE in row 1
 
 A B A T E
-C A M E L
-T R E A D
-S E N S E
-O R D E R
+S Y R I A
+A T I L T
+N E E D A
+A S S E T
 
 A B A T E
-C A M E L
-T R E N D
-S E N S E
-O R D E R
+K E S H A
+I S Y E T
+T O N G A
+A S C O T
 
 A B A T E
-R I S E N
-I S B A D
-S O A M I
-E N D O N
+L U C I A
+O C T E T
+A K I T A
+D O N O T
 ```
 
-- across: ABATE, CAMEL, TREAD, SENSE, ORDER — down: ACTSO, BARER, AMEND, TEASE, ELDER
-- across: ABATE, CAMEL, TREND, SENSE, ORDER — down: ACTSO, BARER, AMEND, TENSE, ELDER
-- across: ABATE, RISEN, ISBAD, SOAMI, ENDON — down: ARISE, BISON, ASBAD, TEAMO, ENDIN
-
-Found in 0.95s.
+Found in 0.35s.
 
 ## The seed does not have to be on top
 
 `-r 3` puts ABATE in the third row.
 
 ```console
-$ sater ABATE -c 2 -r 3
-3,258 words of length 5, seeded with ABATE in row 3
+$ sator ABATE -c 2 -r 3
+7,418 words of length 5 (3,875 hand-approved, tried first), seeded with ABATE in row 3
 
-S C A N S
-N O W O N
+S C O U T
+H U M P H
 A B A T E
-P R I M E
-E A T E R
+N A N O S
+K N I N E
 
-A C T I I
-B U R N T
+S C O U T
+H U M P H
 A B A T E
-F I D E L
-T C E L L
+M A N O R
+S N I P E
 ```
 
-- across: SCANS, NOWON, ABATE, PRIME, EATER — down: SNAPE, COBRA, AWAIT, NOTME, SNEER
-- across: ACTII, BURNT, ABATE, FIDEL, TCELL — down: ABAFT, CUBIC, TRADE, INTEL, ITELL
-
-Found in 0.32s.
+Found in 0.28s.
 
 ## Seeded with a name
 
 A seed does not have to be a word -- if it is not in the list, it is added for the duration of the search.
 
 ```console
-$ sater MATT -c 3
-1,731 words of length 4, seeded with MATT in row 1
+$ sator MATT -c 3
+4,266 words of length 4 (3,037 hand-approved, tried first), seeded with MATT in row 1
 
 M A T T
-I C E R
-M I L E
-I D L E
+A B A R
+C A G E
+S A S K
 
 M A T T
-I C E R
-N I L E
-I D L E
+A B A R
+C A G E
+S A S S
 
 M A T T
-A F A R
-Y A L E
-O N L Y
+I S A W
+C A G E
+A P S E
 ```
 
-- across: MATT, ICER, MILE, IDLE — down: MIMI, ACID, TELL, TREE
-- across: MATT, ICER, NILE, IDLE — down: MINI, ACID, TELL, TREE
-- across: MATT, AFAR, YALE, ONLY — down: MAYO, AFAN, TALL, TREY
-
-Found in 0.02s.
+Found in 0.25s.
 
 ## SATOR-shaped squares
 
 `--symmetric` keeps only the grids that read the same down as across, so each of the four words appears twice.
 
 ```console
-$ sater --symmetric -n 4 -c 3
-1,731 words of length 4
+$ sator --symmetric -n 4 -c 3
+4,266 words of length 4 (3,037 hand-approved, tried first)
 
-A B C S
-B A C K
-C C N Y
-S K Y S
+A C T S
+C A L L
+T L D R
+S L R S
 
-A B C S
-B A I L
+A C T S
 C I A O
-S L O G
+T A G S
+S O S A
 
-A B C S
-B A I L
+A C T S
 C I A O
-S L O T
+T A G S
+S O S O
 ```
 
-- across: ABCS, BACK, CCNY, SKYS — down: ABCS, BACK, CCNY, SKYS
-- across: ABCS, BAIL, CIAO, SLOG — down: ABCS, BAIL, CIAO, SLOG
-- across: ABCS, BAIL, CIAO, SLOT — down: ABCS, BAIL, CIAO, SLOT
+Found in 0.26s.
 
-Found in 0.00s.
+## Hand-approved words and nothing else
 
-## Turning the quality dial down
-
-`-s 0` accepts every entry in the list, including crossword fill like `ASADA` and `BIGIF`. More squares, worse words.
+`--approved-only` drops every unchecked word however well it scored, so all ten entries are ones Matt kept by hand.
 
 ```console
-$ sater ABATE -c 2 -s 0
-11,083 words of length 5, seeded with ABATE in row 1
+$ sator ABATE -c 2 --approved-only
+3,875 hand-approved words of length 5, seeded with ABATE in row 1
 
 A B A T E
-S A M O A
-A C I N G
-D O D G E
-A N E A R
+L I T U P
+I N A N E
+A G R E E
+R O I D S
 
 A B A T E
-R A B I A
-A C I N G
-G O R G E
-E N D E R
+P I T A S
+G N A R S
+A G R E E
+R O I D S
 ```
 
-- across: ABATE, SAMOA, ACING, DODGE, ANEAR — down: ASADA, BACON, AMIDE, TONGA, EAGER
-- across: ABATE, RABIA, ACING, GORGE, ENDER — down: ARAGE, BACON, ABIRD, TINGE, EAGER
+Found in 0.29s.
 
-Found in 0.03s.
+## Letting every unchecked word in
+
+`-s 0` drops the score floor, so the search can reach the 386,327 entries nobody has ruled on. Approved words are still tried first, but the corners they cannot fill are where `NEEDA` and `INONA` get in.
+
+```console
+$ sator ABATE -c 2 -s 0
+11,083 words of length 5 (3,875 hand-approved, tried first), seeded with ABATE in row 1
+
+A B A T E
+S Y R I A
+A T I L T
+N E E D A
+A S S E T
+
+A B A T E
+S Y R I A
+F R E E T
+I N O N A
+T E N E T
+```
+
+Found in 0.29s.
