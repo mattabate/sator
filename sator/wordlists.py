@@ -1,20 +1,20 @@
 """Getting words in.
 
-The default list is Matt's scored crossword word list, ~417,000 entries in
+The default list is Matt's scored crossword word list, ~410,000 entries in
 "crossword constructor" format (``WORD;score``, score 0-50), published at
 https://github.com/mattabate/wordlist. It is downloaded once and cached, so
 ``sator ABATE`` works on a fresh checkout with nothing else installed.
 
 Every word in it has one of three states, and the search treats each
-differently:
+differently (counts as of October 2026; the list keeps moving):
 
-* **rejected** -- 16,284 words thrown out by hand. They are not in the file at
+* **rejected** -- 24,901 words thrown out by hand. They are not in the file at
   all: it is generated with ``WHERE status != 'rejected'``. Nothing you do to
   ``min_score`` can put one in a square.
-* **approved** -- 31,343 words kept by hand. Always allowed, whatever they
+* **approved** -- 34,960 words kept by hand. Always allowed, whatever they
   scored. A person already answered the question; a model's number does not
   get to overrule it.
-* **unchecked** -- the other 386,327. Nobody has ruled on these, so the score
+* **unchecked** -- the other 375,398. Nobody has ruled on these, so the score
   decides, at :data:`APPROVED_MIN_SCORE` or above.
 
 That is the whole rule: *not rejected, and either approved or good enough*.
@@ -29,6 +29,12 @@ Any other list works too: pass a ``.txt`` (one word per line, with or without
 ``;score``), a ``.json`` (a list of words, or a list of ``[word, score]``
 pairs), or a directory of ``.txt`` files -- which is the shape the English Open
 Word List ships in.
+
+A second list can narrow the first: :func:`plain_words` reads a file the way a
+dictionary is laid out (one headword per line, a capital letter marking a name)
+and the CLI's ``--also-in`` keeps only the words both lists have. Approval says
+a word is fair in a crossword, which admits phrases, names and crosswordese;
+``--also-in /usr/share/dict/words`` is how you ask for plain English on top.
 """
 
 from __future__ import annotations
@@ -63,7 +69,26 @@ __all__ = [
     "default_words",
     "download",
     "load",
+    "plain_words",
 ]
+
+
+def plain_words(source: str | Path) -> set[str]:
+    """The plain words in a dictionary-shaped file, upper-cased.
+
+    One entry per line. A line counts if it is a single run of letters written
+    in lower case (or all capitals); a line with a capital initial is a name
+    and does not, and anything with a space, hyphen or digit is not one word.
+    That is the layout of ``/usr/share/dict/words``, where ``agate`` is a word
+    and ``Soros`` is not, which is the distinction ``--also-in`` is for.
+    A ``;score`` suffix is ignored, so a scored list works too.
+    """
+    kept: set[str] = set()
+    for line in Path(source).expanduser().read_text(errors="ignore").splitlines():
+        word = line.strip().partition(";")[0].strip()
+        if word.isalpha() and (word.islower() or word.isupper()):
+            kept.add(word.upper())
+    return kept
 
 
 def cache_path() -> Path:

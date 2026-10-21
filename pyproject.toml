@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sator"
-version = "0.2.0"
+version = "0.3.0"
 description = "Search for double word squares -- grids where every row and every column is a word."
 readme = "README.md"
 requires-python = ">=3.10"

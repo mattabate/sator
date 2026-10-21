@@ -15,6 +15,7 @@ from .wordlists import (
     default_words,
     download,
     load,
+    plain_words,
 )
 
 __all__ = ["main"]
@@ -62,6 +63,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "every unchecked word however well it scored.",
     )
     p.add_argument(
+        "--also-in",
+        type=Path,
+        metavar="FILE",
+        help="keep only words that FILE also lists as a plain lower-case "
+        "headword, one per line -- /usr/share/dict/words, say. Capitalised "
+        "lines (names) do not count. Approval means fair in a crossword; this "
+        "is how to ask for ordinary English on top of it.",
+    )
+    p.add_argument(
         "--repeats", action="store_true", help="allow a word to appear twice"
     )
     p.add_argument(
@@ -101,6 +111,11 @@ def main(argv: list[str] | None = None) -> int:
         )
         approved = sum(1 for _, s in words if s >= APPROVED_BONUS)
 
+    if args.also_in:
+        plain = plain_words(args.also_in)
+        words = [(w, s) for w, s in words if w in plain]
+        approved = sum(1 for _, s in words if s >= APPROVED_BONUS) if approved else 0
+
     if not words:
         print(f"sator: no {order}-letter words in that list", file=sys.stderr)
         return 1
@@ -111,6 +126,8 @@ def main(argv: list[str] | None = None) -> int:
         pool_note = f"{len(words):,} words of length {order}" + (
             f" ({approved:,} hand-approved, tried first)" if approved else ""
         )
+    if args.also_in:
+        pool_note += f" also in {args.also_in}"
     print(
         pool_note
         + (f", seeded with {args.seed.upper()} in row {args.row}" if args.seed else "")
@@ -136,7 +153,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps([list(s.rows) for s in found], indent=2))
 
     print(f"\n{len(found)} square(s) in {time.time() - started:.1f}s", file=sys.stderr)
-    if not found and not args.words and args.min_score > 0:
+    if not found and not args.words and not args.approved_only and args.min_score > 0:
         print(
             f"sator: nothing at --min-score {args.min_score} -- lowering it "
             f"lets in more unchecked words",
