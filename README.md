@@ -3,11 +3,16 @@
 Find **double word squares** — grids where every row *and* every column is a word.
 
 ```console
-$ sator --symmetric -n 4 -c 2
-4,266 words of length 4 (3,037 hand-approved, tried first)
+$ sator --symmetric -n 4 -c 3
+4,188 words of length 4 (3,707 hand-approved, tried first)
 
 A C T S
 C A L L
+T L D R
+S L R S
+
+A C T S
+C E L L
 T L D R
 S L R S
 
@@ -44,21 +49,35 @@ Python 3.10 or newer. **No dependencies** — the whole thing is standard librar
 ## Use it
 
 ```console
-$ sator ABATE -c 1 --approved-only
+$ sator MATT -c 1 --approved-only
 sator: fetching https://raw.githubusercontent.com/mattabate/wordlist/refs/heads/main/quickstart/matts_wordlist.txt
        -> ~/.cache/sator/matts_wordlist.txt
-3,875 hand-approved words of length 5, seeded with ABATE in row 1
+3,707 hand-approved words of length 4, seeded with MATT in row 1
 
+M A T T
+A R I A
+K E E P
+E A R S
+```
+
+Down: `MAKE`, `AREA`, `TIER`, `TAPS`. The seed does not have to be a word: MATT
+is not in the list, so it is added for the duration of the search. The first
+run downloads a word list (see below) and caches it. After that it is instant:
+that square came out of 3,707 candidate words in **3 milliseconds**.
+
+Five letters is where it gets hard. The hand-approved list has 4,165 of them,
+and the first square `sator ABATE -c 1 --approved-only` finds is
+
+```
 A B A T E
-L I T U P
-I N A N E
+P I T A S
+G N A R S
 A G R E E
 R O I D S
 ```
 
-Down: `ALIAR`, `BINGO`, `ATARI`, `TUNED`, `EPEES`. The first run downloads a
-word list (see below) and caches it. After that it is instant: that square came
-out of 3,875 candidate words in **0.03 seconds**.
+with `APGAR`, `BINGO`, `ATARI`, `TARED`, `ESSES` down — every one a word a
+person said yes to, and still a square only a constructor would love.
 
 More examples, all reproducible, are in [`examples/`](examples/README.md).
 
@@ -86,13 +105,15 @@ answer to that. Every entry has one of three states:
 
 | | words | what `sator` does with it |
 | --- | --- | --- |
-| **rejected** | 16,284 | never used — they are not even in the published file |
-| **approved** | 31,343 | always used, whatever they scored |
-| **unchecked** | 386,327 | used if they score `--min-score` or better |
+| **rejected** | 24,896 | never used — they are not even in the published file |
+| **approved** | 34,965 | always used, whatever they scored |
+| **unchecked** | 375,398 | used if they score `--min-score` or better |
 
 That is the whole rule: **not rejected, and either approved or good enough.**
 A person already answered the question for the first two; the model's number
-only decides the third.
+only decides the third. The list keeps moving: a word that reads badly in a
+square gets rejected and drops out of the published file, which is what happened
+to the `ALIAR` an earlier version of this page showed.
 
 The default cut is **25**, which is not a taste of mine — it is
 `approvd_min_score` from the word list's own
@@ -102,18 +123,20 @@ score at least as high as the *lowest* an approved word can score:
 
 | `--min-score` | 3-letter | 4-letter | 5-letter | 6-letter |
 | --- | --- | --- | --- | --- |
-| 0 (everything) | 2,121 | 5,465 | 11,083 | 18,744 |
-| **25 (default)** | **1,829** | **4,266** | **7,418** | **11,677** |
-| 40 | 1,748 | 3,651 | 5,606 | 7,488 |
-| `--approved-only` | 1,679 | 3,037 | 3,875 | 3,055 |
+| 0 (everything) | 1,868 | 4,999 | 10,614 | 18,285 |
+| **25 (default)** | **1,868** | **4,188** | **7,372** | **11,634** |
+| 40 | 1,868 | 3,721 | 5,724 | 7,617 |
+| `--approved-only` | 1,868 | 3,707 | 4,165 | 3,339 |
+
+(Every three-letter word has been ruled on, so the cut changes nothing there.)
 
 Two things follow that are easy to get wrong. **`--min-score` never touches an
 approved word** — the score is a model's guess and approval is a person's
 answer, so no cut can throw one away. And **`--min-score` is not a quality
 dial**: the bands overlap almost completely, so an unchecked word can score 50,
-and a cut of 40 on the raw list still leaves a pool that is only 46% approved.
-If you want quality, use `--approved-only`; raising the score just makes the
-search rarer, not better.
+and a cut of 40 on the raw five-letter list still leaves a pool where one word
+in four is unchecked. If you want quality, use `--approved-only`; raising the
+score just makes the search rarer, not better.
 
 Approved words are always tried first, so the difference shows up in the
 corners the approved list cannot reach.
@@ -160,7 +183,7 @@ minutes.
 ## Word lists
 
 The default is [**mattabate/wordlist**](https://github.com/mattabate/wordlist) —
-417,670 entries scored 0–50 by a model trained on the words I said yes and no
+410,363 entries scored 0–50 by a model trained on the words I said yes and no
 to, plus the approved/rejected lists themselves. `sator` downloads
 `matts_wordlist.txt` and `approved.json` on first use to `~/.cache/sator/`, or
 wherever you point `$SATOR_WORDLIST` and `$SATOR_APPROVED`. That repo is
