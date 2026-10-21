@@ -3,6 +3,52 @@
 Every grid below came out of `sator` itself, on the default word list.
 The command above each block reproduces it.
 
+## Plain English only
+
+Matt, on a square of approved words: 'the words in this one are fine, like acceptable, but together they are bad'. Approval is a crossword judgment and admits names, phrases and crosswordese; `--also-in` keeps only the words a dictionary lists as plain lowercase headwords, so every one of these ten is a word you would say.
+
+```console
+$ sator SCARE -c 1 --approved-only --also-in /usr/share/dict/words
+1,573 hand-approved words of length 5 also in /usr/share/dict/words, seeded with SCARE in row 1
+
+S C A R E
+T A L O N
+A B O U T
+G A U G E
+E L D E R
+```
+
+Found in 0.15s.
+
+## Plain English, no seed
+
+The same pool, 1,573 words, searched freely.
+
+```console
+$ sator -n 5 -c 3 --approved-only --also-in /usr/share/dict/words
+1,573 hand-approved words of length 5 also in /usr/share/dict/words
+
+S T A G E
+T A L O N
+A B B O T
+L O U S E
+L O S E R
+
+S T A G E
+C A B A L
+A L O U D
+R O U G E
+E N T E R
+
+C A T C H
+A N I L E
+U N B I D
+S U I N G
+E L A T E
+```
+
+Found in 1.33s.
+
 ## Seeded with ABATE
 
 The one Matt asked for. ABATE goes in the top row; everything else is the search's doing. Every other word here is one he approved by hand.
@@ -53,7 +99,7 @@ M A N O R
 S N I P E
 ```
 
-Found in 0.10s.
+Found in 0.09s.
 
 ## Seeded with a name
 
