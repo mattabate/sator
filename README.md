@@ -49,24 +49,28 @@ Python 3.10 or newer. **No dependencies** — the whole thing is standard librar
 ## Use it
 
 ```console
-$ sator MATT -c 1 --approved-only
+$ sator SCARE -c 1 --approved-only --also-in /usr/share/dict/words
 sator: fetching https://raw.githubusercontent.com/mattabate/wordlist/refs/heads/main/quickstart/matts_wordlist.txt
        -> ~/.cache/sator/matts_wordlist.txt
-3,707 hand-approved words of length 4, seeded with MATT in row 1
+1,573 hand-approved words of length 5 also in /usr/share/dict/words, seeded with SCARE in row 1
 
-M A T T
-A R I A
-K E E P
-E A R S
+S C A R E
+T A L O N
+A B O U T
+G A U G E
+E L D E R
 ```
 
-Down: `MAKE`, `AREA`, `TIER`, `TAPS`. The seed does not have to be a word: MATT
-is not in the list, so it is added for the duration of the search. The first
-run downloads a word list (see below) and caches it. After that it is instant:
-that square came out of 3,707 candidate words in **3 milliseconds**.
+Down: `STAGE`, `CABAL`, `ALOUD`, `ROUGE`, `ENTER`. Ten ordinary words. The
+first run downloads a word list (see below) and caches it. After that it is
+instant: that square came out of 1,573 candidate words in **a tenth of a
+second**.
 
-Five letters is where it gets hard. The hand-approved list has 4,160 of them,
-and the first square `sator ABATE -c 1 --approved-only` finds is
+The two flags do different jobs. `--approved-only` keeps to the words a person
+said yes to; `--also-in` keeps only those a dictionary lists as a plain
+lower-case headword, which drops names, phrases and crosswordese. You need
+both, because approval is a crossword judgment: without the second flag,
+`sator ABATE -c 1 --approved-only` gives
 
 ```
 A B A T E
@@ -76,8 +80,13 @@ A G R E E
 R O I D S
 ```
 
-with `APGAR`, `BINGO`, `ATARI`, `TARED`, `ESSES` down — every one a word a
-person said yes to, and still a square only a constructor would love.
+with `APGAR`, `BINGO`, `ATARI`, `TARED`, `ESSES` down — every word fair in a
+grid, and not one you would say out loud. (In plain English ABATE has no
+five-letter square at all; the pool is only 1,573 words.)
+
+The seed does not have to be a word. `sator MATT -c 1 --approved-only` gives
+`MATT / ARIA / KEEP / EARS`, down `MAKE / AREA / TIER / TAPS`: MATT is not in
+the list, so it is added for the duration of the search.
 
 More examples, all reproducible, are in [`examples/`](examples/README.md).
 
@@ -92,6 +101,7 @@ More examples, all reproducible, are in [`examples/`](examples/README.md).
 | `-w, --words FILE` | use your own list — a `.txt`, a `.json`, or a directory of `.txt` |
 | `-s, --min-score 40` | score an unchecked word needs to get in (0–50, default 25) |
 | `--approved-only` | hand-approved words and nothing else |
+| `--also-in FILE` | only words FILE also lists as a plain lower-case headword, e.g. `/usr/share/dict/words` |
 | `--symmetric` | only SATOR-shaped squares, which read the same down as across |
 | `--repeats` | allow a word to appear twice |
 | `--json` | print JSON instead of grids |
@@ -141,6 +151,14 @@ score just makes the search rarer, not better.
 
 Approved words are always tried first, so the difference shows up in the
 corners the approved list cannot reach.
+
+Approval is also not the same as ordinary English. The list is a crossword
+list, so `ONSET` and `ATARI` and `ISYET` are all fair, and a square of nothing
+but approved words can still read like a constructor's notebook. `--also-in`
+is the second filter for that: give it any dictionary-shaped file (one headword
+per line, a capital letter marking a name) and only the words both lists have
+are used. On a Mac or Linux box `/usr/share/dict/words` is already there, and
+it cuts the five-letter approved pool from 4,160 to 1,573.
 
 ## Use it as a library
 
@@ -206,7 +224,7 @@ Words are upper-cased, spaces are stripped, anything non-alphabetic is dropped.
 python tests/test_squares.py     # or: pytest
 ```
 
-Sixteen tests, no network and no word list required.
+Seventeen tests, no network and no word list required.
 
 ## Where this came from
 
