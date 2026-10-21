@@ -9,7 +9,7 @@ The one Matt asked for. ABATE goes in the top row; everything else is the search
 
 ```console
 $ sator ABATE -c 3
-7,372 words of length 5 (4,165 hand-approved, tried first), seeded with ABATE in row 1
+7,367 words of length 5 (4,160 hand-approved, tried first), seeded with ABATE in row 1
 
 A B A T E
 S Y R I A
@@ -30,7 +30,7 @@ A K I T A
 D O N O T
 ```
 
-Found in 0.10s.
+Found in 0.11s.
 
 ## The seed does not have to be on top
 
@@ -38,22 +38,22 @@ Found in 0.10s.
 
 ```console
 $ sator ABATE -c 2 -r 3
-7,372 words of length 5 (4,165 hand-approved, tried first), seeded with ABATE in row 3
+7,367 words of length 5 (4,160 hand-approved, tried first), seeded with ABATE in row 3
 
-I C A N T
-T U T O R
+S C O U T
+H U M P H
 A B A T E
-G A L E N
-O N L S D
+N A N O S
+K N I N E
 
-I C A N T
-T U M O R
+S C O U T
+H U M P H
 A B A T E
-L A S T A
-O N S E T
+M A N O R
+S N I P E
 ```
 
-Found in 0.09s.
+Found in 0.10s.
 
 ## Seeded with a name
 
@@ -113,7 +113,7 @@ Found in 0.08s.
 
 ```console
 $ sator ABATE -c 2 --approved-only
-4,165 hand-approved words of length 5, seeded with ABATE in row 1
+4,160 hand-approved words of length 5, seeded with ABATE in row 1
 
 A B A T E
 P I T A S
@@ -136,7 +136,7 @@ Found in 0.10s.
 
 ```console
 $ sator ABATE -c 2 -s 0
-10,614 words of length 5 (4,165 hand-approved, tried first), seeded with ABATE in row 1
+10,609 words of length 5 (4,160 hand-approved, tried first), seeded with ABATE in row 1
 
 A B A T E
 S Y R I A
