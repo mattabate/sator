@@ -65,7 +65,7 @@ is not in the list, so it is added for the duration of the search. The first
 run downloads a word list (see below) and caches it. After that it is instant:
 that square came out of 3,707 candidate words in **3 milliseconds**.
 
-Five letters is where it gets hard. The hand-approved list has 4,165 of them,
+Five letters is where it gets hard. The hand-approved list has 4,160 of them,
 and the first square `sator ABATE -c 1 --approved-only` finds is
 
 ```
@@ -105,15 +105,16 @@ answer to that. Every entry has one of three states:
 
 | | words | what `sator` does with it |
 | --- | --- | --- |
-| **rejected** | 24,896 | never used — they are not even in the published file |
-| **approved** | 34,965 | always used, whatever they scored |
+| **rejected** | 24,901 | never used — they are not even in the published file |
+| **approved** | 34,960 | always used, whatever they scored |
 | **unchecked** | 375,398 | used if they score `--min-score` or better |
 
 That is the whole rule: **not rejected, and either approved or good enough.**
 A person already answered the question for the first two; the model's number
 only decides the third. The list keeps moving: a word that reads badly in a
 square gets rejected and drops out of the published file, which is what happened
-to the `ALIAR` an earlier version of this page showed.
+to `ALIAR`, `GALEN` and `ONLSD` after an earlier version of this page showed
+them.
 
 The default cut is **25**, which is not a taste of mine — it is
 `approvd_min_score` from the word list's own
@@ -123,10 +124,10 @@ score at least as high as the *lowest* an approved word can score:
 
 | `--min-score` | 3-letter | 4-letter | 5-letter | 6-letter |
 | --- | --- | --- | --- | --- |
-| 0 (everything) | 1,868 | 4,999 | 10,614 | 18,285 |
-| **25 (default)** | **1,868** | **4,188** | **7,372** | **11,634** |
-| 40 | 1,868 | 3,721 | 5,724 | 7,617 |
-| `--approved-only` | 1,868 | 3,707 | 4,165 | 3,339 |
+| 0 (everything) | 1,868 | 4,999 | 10,609 | 18,285 |
+| **25 (default)** | **1,868** | **4,188** | **7,367** | **11,634** |
+| 40 | 1,868 | 3,721 | 5,719 | 7,617 |
+| `--approved-only` | 1,868 | 3,707 | 4,160 | 3,339 |
 
 (Every three-letter word has been ruled on, so the cut changes nothing there.)
 
@@ -183,7 +184,7 @@ minutes.
 ## Word lists
 
 The default is [**mattabate/wordlist**](https://github.com/mattabate/wordlist) —
-410,363 entries scored 0–50 by a model trained on the words I said yes and no
+410,358 entries scored 0–50 by a model trained on the words I said yes and no
 to, plus the approved/rejected lists themselves. `sator` downloads
 `matts_wordlist.txt` and `approved.json` on first use to `~/.cache/sator/`, or
 wherever you point `$SATOR_WORDLIST` and `$SATOR_APPROVED`. That repo is
