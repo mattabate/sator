@@ -18,8 +18,10 @@ from sator import (  # noqa: E402
     WordIndex,
     default_words,
     load,
+    plain_words,
     search,
 )
+from sator.cli import main  # noqa: E402
 
 # A four-word list that admits exactly one double word square.
 TINY = ["CAT", "OAR", "TEN", "COT", "AAE", "TRN"]
@@ -160,6 +162,23 @@ def test_default_cut_comes_from_the_generator():
     _fake_wordlist()
     (Path(os.environ["SATOR_WORDLIST"])).write_text("CAT;24\nEEL;25\nDOG;10\n")
     assert [w for w, _ in default_words()] == ["DOG", "EEL"]
+
+
+def test_also_in_keeps_plain_dictionary_words():
+    tmp = _fake_wordlist()
+    # Dictionary layout: a capital initial is a name, a space is not one word.
+    (tmp / "dict").write_text("cat\nDog\neel\nice cream\nUFO\nA\n")
+    assert plain_words(tmp / "dict") == {"CAT", "EEL", "UFO", "A"}
+    # CAT and EEL pass; DOG is hand-approved but a name in the dictionary, so
+    # --also-in drops it -- approval is a crossword judgment, not an English one.
+    import io
+    from contextlib import redirect_stdout, redirect_stderr
+
+    out = io.StringIO()
+    with redirect_stdout(out), redirect_stderr(io.StringIO()):
+        code = main(["-n", "3", "--json", "--also-in", str(tmp / "dict")])
+    assert f"2 words of length 3 also in {tmp / 'dict'}" in out.getvalue(), out.getvalue()
+    assert code == 1, "no square from two words"
 
 
 if __name__ == "__main__":
