@@ -17,9 +17,10 @@ from .wordlists import (
     default_words,
     download,
     load,
+    plain_words,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "BLANK",
@@ -34,5 +35,6 @@ __all__ = [
     "default_words",
     "download",
     "load",
+    "plain_words",
     "__version__",
 ]
